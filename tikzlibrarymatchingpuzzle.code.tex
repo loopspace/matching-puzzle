@@ -1,0 +1,214 @@
+\RequirePackage{expl3}
+\RequirePackage{xparse}
+
+\ProvidesExplFile {matchingpuzzle} {2019/05/19} {v1.0} {TikZ library to create matching puzzles}
+
+% Sequence of sides, each side is an token list
+\seq_new:N \l__jigsaw_sides_seq
+
+% Sequence of triangle sides
+\seq_new:N \l__jigsaw_hexagon_sides_seq
+
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*13,{},*30}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {30,{},*24}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*23,{},*29}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {29,{},*22}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*21,{},*28}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {28,{},*20}
+
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*19,{},*27}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {27,{},*18}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*17,{},*26}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {26,{},*16}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*15,{},*25}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {25,{},*14}
+
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {23,2,24}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {21,*12,22}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {19,10,20}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {17,*8,18}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {15,6,16}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {13,*4,14}
+
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {11,12,*9}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {9,*10,*7}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {7,8,*5}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {5,*6,*3}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {3,4,*1}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {1,*2,*11}
+
+
+
+\DeclareDocumentCommand \AddSide { m m }
+{
+  \int_compare:nTF { \int_rand:n {2} == 2 }
+  {
+    \seq_put_right:Nn \l__jigsaw_sides_seq {{#1}{#2}}
+  }
+  {
+    \seq_put_right:Nn \l__jigsaw_sides_seq {{#2}{#1}}
+  }
+}
+
+\cs_new_nopar:Npn \jigsaw_typeset_first_side:n #1
+{
+  \int_compare:nT {#1 <= \seq_count:N \l__jigsaw_sides_seq}
+  {
+    \exp_last_unbraced:Nx \use_i:nn  {\seq_item:Nn \l__jigsaw_sides_seq {#1}}
+  }
+}
+
+\cs_new_nopar:Npn \jigsaw_typeset_second_side:n #1
+{
+  \int_compare:nT {#1 <= \seq_count:N \l__jigsaw_sides_seq}
+  {
+    \exp_last_unbraced:Nx \use_ii:nn  {\seq_item:Nn \l__jigsaw_sides_seq {#1}}
+  }
+}
+
+\cs_new_nopar:Npn \jigsaw_evaluate_side:n #1
+{
+  \tl_set:Nx \l__tmpa_tl {\seq_item:Nn \l__jigsaw_sides_seq {#1}}
+  \tl_set:Nx \l__tmpa_tl {\tl_item:Nn \l__tmpa_tl {2}}
+  \fp_to_decimal:n {round(\l__tmpa_tl, 2, 1)}
+}
+
+\seq_new:N \l__shape_sides_seq
+\tl_set:Nn \g__star_tl {*}
+
+\cs_generate_variant:Nn \clist_map_inline:nn {Vn}
+
+\DeclareDocumentCommand \ProcessSides { m }
+{
+  \seq_clear:N \l__shape_sides_seq
+  \tl_set:Nx \l__tmpb_tl {\seq_item:Nn \l__jigsaw_hexagon_sides_seq {#1}}
+  \clist_map_inline:Vn \l__tmpb_tl {
+    \tl_if_empty:nTF {##1} {
+     \seq_push:Nn \l__shape_sides_seq {}
+    }
+    {
+      \tl_set:Nx \l__tmpa_tl {\tl_head:n {##1}}
+      \tl_if_eq:NNTF \l__tmpa_tl \g__star_tl
+      {
+        \seq_push:Nx \l__shape_sides_seq {\exp_not:N \jigsaw_typeset_second_side:n {\tl_tail:n {##1}}}
+      }
+      {
+        \seq_push:Nn \l__shape_sides_seq {\jigsaw_typeset_first_side:n {##1}}
+      }
+    }
+  }
+}
+
+\DeclareDocumentCommand \GetSide { m }
+{
+  \seq_item:Nn \l__shape_sides_seq {#1}
+}
+
+\DeclareDocumentCommand \ShuffleSides {}
+{
+  \seq_shuffle:N \l__jigsaw_sides_seq
+}
+
+\DeclareDocumentCommand \ShufflePieces {}
+{
+  \seq_shuffle:N \l__jigsaw_hexagon_sides_seq
+}
+
+\DeclareDocumentCommand \ShowSides {}
+{
+\begin{tabular}{rl}
+  
+  \int_step_inline:nnnn {1}{1}{\seq_count:N \l__jigsaw_sides_seq}
+  {
+   \jigsaw_typeset_first_side:n {##1} & \jigsaw_typeset_second_side:n {##1} \\
+  }
+  \end{tabular}
+}
+
+\ExplSyntaxOff
+
+\tikzset{
+  pics/jigsaw square/.style={
+    code={
+     \ProcessSides{#1}
+     \draw (0,0) rectangle (5,5);
+     \node[transform shape,above,at={(2.5,0)},node contents={\GetSide{1}},first side/.try];
+     \node[transform shape,above,rotate=90,at={(5,2.5)},node contents={\GetSide{2}},second side/.try];
+     \node[transform shape,above,rotate=180,at={(2.5,5)},node contents={\GetSide{3}},third side/.try];
+     \node[transform shape,above,rotate=-90,at={(0,2.5)},node contents={\GetSide{4}},fourth side/.try];
+    }
+  },
+  pics/jigsaw triangle/.style={
+    code={
+    \ProcessSides{#1}
+     \draw (0,0) -- (5,0) -- (60:5) -- cycle;
+     \node[transform shape,above,at={(2.5,0)},node contents={\GetSide{1}},first side/.try];
+     \node[transform shape,above,rotate=120,at={(30:{5*sqrt(3)/2})},node contents={\GetSide{2}},second side/.try];
+     \node[transform shape,above,rotate=-120,at={(60:2.5)},node contents={\GetSide{3}},third side/.try];
+    }
+  },
+  pics/jigsaw hexagon solution/.style={
+    code={
+      \pic[transform shape,rotate=-90] {jigsaw triangle=1};
+      \pic[transform shape,rotate=-30] {jigsaw triangle=2};
+      \pic[transform shape,rotate=30] {jigsaw triangle=3};
+      \pic[transform shape,rotate=90] {jigsaw triangle=4};
+      \pic[transform shape,rotate=150] {jigsaw triangle=5};
+      \pic[transform shape,rotate=-150] {jigsaw triangle=6};
+      \pic[transform shape,rotate=150] at ({5*sqrt(3)},0) {jigsaw triangle=7};
+      \pic[transform shape,rotate=210] at (60:{5*sqrt(3)}) {jigsaw triangle=8};
+      \pic[transform shape,rotate=270] at (120:{5*sqrt(3)}) {jigsaw triangle=9};
+      \pic[transform shape,rotate=-30] at (180:{5*sqrt(3)}) {jigsaw triangle=10};
+      \pic[transform shape,rotate=30] at (240:{5*sqrt(3)}) {jigsaw triangle=11};
+      \pic[transform shape,rotate=90] at (300:{5*sqrt(3)}) {jigsaw triangle=12};
+      \pic[transform shape,rotate=-30] at (30:5) {jigsaw triangle=13};
+      \pic[transform shape,rotate=30] at (30:5) {jigsaw triangle=14};
+      \pic[transform shape,rotate=30] at (90:5) {jigsaw triangle=15};
+      \pic[transform shape,rotate=90] at (90:5) {jigsaw triangle=16};
+      \pic[transform shape,rotate=90] at (150:5) {jigsaw triangle=17};
+      \pic[transform shape,rotate=150] at (150:5) {jigsaw triangle=18};
+      \pic[transform shape,rotate=150] at (210:5) {jigsaw triangle=19};
+      \pic[transform shape,rotate=210] at (210:5) {jigsaw triangle=20};
+      \pic[transform shape,rotate=210] at (270:5) {jigsaw triangle=21};
+      \pic[transform shape,rotate=270] at (270:5) {jigsaw triangle=22};
+      \pic[transform shape,rotate=270] at (-30:5) {jigsaw triangle=23};
+      \pic[transform shape,rotate=-30] at (-30:5) {jigsaw triangle=24};
+    }
+  },
+  pics/jigsaw hexagon puzzle 1/.style={
+    code={
+      \pic[transform shape,rotate=-90] {jigsaw triangle=1};
+      \pic[transform shape,rotate=-30] {jigsaw triangle=2};
+      \pic[transform shape,rotate=30] {jigsaw triangle=3};
+      \pic[transform shape,rotate=90] {jigsaw triangle=4};
+      \pic[transform shape,rotate=150] {jigsaw triangle=5};
+      \pic[transform shape,rotate=-150] {jigsaw triangle=6};
+      \pic[transform shape,rotate=-30] at (0,5) {jigsaw triangle=7};
+      \pic[transform shape,rotate=150] at (0,5) {jigsaw triangle=8};
+    }
+  },
+  pics/jigsaw hexagon puzzle 2/.style={
+    code={
+      \pic[transform shape,rotate=-90] {jigsaw triangle=9};
+      \pic[transform shape,rotate=-30] {jigsaw triangle=10};
+      \pic[transform shape,rotate=30] {jigsaw triangle=11};
+      \pic[transform shape,rotate=90] {jigsaw triangle=12};
+      \pic[transform shape,rotate=150] {jigsaw triangle=13};
+      \pic[transform shape,rotate=-150] {jigsaw triangle=14};
+      \pic[transform shape,rotate=-30] at (0,5) {jigsaw triangle=15};
+      \pic[transform shape,rotate=150] at (0,5) {jigsaw triangle=16};
+    }
+  },
+  pics/jigsaw hexagon puzzle 3/.style={
+    code={
+      \pic[transform shape,rotate=-90] {jigsaw triangle=17};
+      \pic[transform shape,rotate=-30] {jigsaw triangle=18};
+      \pic[transform shape,rotate=30] {jigsaw triangle=19};
+      \pic[transform shape,rotate=90] {jigsaw triangle=20};
+      \pic[transform shape,rotate=150] {jigsaw triangle=21};
+      \pic[transform shape,rotate=-150] {jigsaw triangle=22};
+      \pic[transform shape,rotate=-30] at (0,5) {jigsaw triangle=23};
+      \pic[transform shape,rotate=150] at (0,5) {jigsaw triangle=24};
+    }
+  },
+}
