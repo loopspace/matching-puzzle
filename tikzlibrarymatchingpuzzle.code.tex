@@ -3,25 +3,34 @@
 
 \ProvidesExplFile {matchingpuzzle} {2019/05/19} {v1.0} {TikZ library to create matching puzzles}
 
+% Scratch token list
+\tl_new:N \l__jigsaw_tmpa_tl
+
 % Sequence of sides, each side is an token list
 \seq_new:N \l__jigsaw_sides_seq
 
-% Sequence of triangle sides
+% Sequence holding the order of the sides
+\seq_new:N \l__jigsaw_order_seq
+
+% Sequence holding flags for which of a side pair is primary
+\seq_new:N \l__jigsaw_prime_seq
+
+% Sequence of triangle sides for a large hexagon
 \seq_new:N \l__jigsaw_hexagon_sides_seq
 
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*13,{},*30}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {30,{},*24}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*23,{},*29}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {29,{},*22}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*21,{},*28}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {28,{},*20}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*13,42,*30}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {30,41,*24}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*23,40,*29}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {29,39,*22}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*21,38,*28}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {28,37,*20}
 
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*19,{},*27}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {27,{},*18}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*17,{},*26}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {26,{},*16}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*15,{},*25}
-\seq_push:Nn \l__jigsaw_hexagon_sides_seq {25,{},*14}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*19,36,*27}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {27,35,*18}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*17,34,*26}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {26,33,*16}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {*15,32,*25}
+\seq_push:Nn \l__jigsaw_hexagon_sides_seq {25,31,*14}
 
 \seq_push:Nn \l__jigsaw_hexagon_sides_seq {23,2,24}
 \seq_push:Nn \l__jigsaw_hexagon_sides_seq {21,*12,22}
@@ -37,24 +46,55 @@
 \seq_push:Nn \l__jigsaw_hexagon_sides_seq {3,4,*1}
 \seq_push:Nn \l__jigsaw_hexagon_sides_seq {1,*2,*11}
 
+\prop_new:N \g__jigsaw_shapes_prop
+\prop_put:Nnn \g__jigsaw_shapes_prop {hexagon} {30}
 
+\DeclareDocumentEnvironment {Jigsaw} {m}
+{
+  \seq_clear:N \l__jigsaw_sides_seq
+  \seq_clear:N \l__jigsaw_order_seq
+  \seq_clear:N \l__jigsaw_prime_seq
+  \prop_get:NnN \g__jigsaw_shapes_prop {#1} \l__jigsaw_tmpa_tl
+  \int_step_inline:nnnn {1} {1} {\l__jigsaw_tmpa_tl}
+  {
+    \seq_put_right:Nn \l__jigsaw_order_seq {##1}
+    \int_compare:nTF { \int_rand:n {2} == 2 }
+    {
+      \seq_put_right:Nn \l__jigsaw_prime_seq {1}
+    }
+    {
+      \seq_put_right:Nn \l__jigsaw_prime_seq {0}
+    }
+  }
+  \seq_shuffle:N \l__jigsaw_order_seq
+}
+{
+}
 
 \DeclareDocumentCommand \AddSide { m m }
 {
-  \int_compare:nTF { \int_rand:n {2} == 2 }
-  {
-    \seq_put_right:Nn \l__jigsaw_sides_seq {{#1}{#2}}
-  }
-  {
-    \seq_put_right:Nn \l__jigsaw_sides_seq {{#2}{#1}}
-  }
+  \seq_put_right:Nn \l__jigsaw_sides_seq {{#1}{#2}}
 }
 
 \cs_new_nopar:Npn \jigsaw_typeset_first_side:n #1
 {
   \int_compare:nT {#1 <= \seq_count:N \l__jigsaw_sides_seq}
   {
-    \exp_last_unbraced:Nx \use_i:nn  {\seq_item:Nn \l__jigsaw_sides_seq {#1}}
+    \int_compare:nTF {\seq_item:Nn \l__jigsaw_prime_seq {#1} == 0}
+    {
+      \exp_last_unbraced:Nx \use_i:nn  {
+        \seq_item:Nn \l__jigsaw_sides_seq {
+          \seq_item:Nn \l__jigsaw_order_seq {#1}
+        }
+      }
+    }
+    {
+      \exp_last_unbraced:Nx \use_ii:nn  {
+        \seq_item:Nn \l__jigsaw_sides_seq {
+          \seq_item:Nn \l__jigsaw_order_seq {#1}
+        }
+      }
+    }
   }
 }
 
@@ -62,9 +102,24 @@
 {
   \int_compare:nT {#1 <= \seq_count:N \l__jigsaw_sides_seq}
   {
-    \exp_last_unbraced:Nx \use_ii:nn  {\seq_item:Nn \l__jigsaw_sides_seq {#1}}
+    \int_compare:nTF {\seq_item:Nn \l__jigsaw_prime_seq {#1} == 0}
+    {
+      \exp_last_unbraced:Nx \use_ii:nn  {
+        \seq_item:Nn \l__jigsaw_sides_seq {
+          \seq_item:Nn \l__jigsaw_order_seq {#1}
+        }
+      }
+    }
+    {
+      \exp_last_unbraced:Nx \use_i:nn  {
+        \seq_item:Nn \l__jigsaw_sides_seq {
+          \seq_item:Nn \l__jigsaw_order_seq {#1}
+        }
+      }
+    }
   }
 }
+
 
 \cs_new_nopar:Npn \jigsaw_evaluate_side:n #1
 {
@@ -104,20 +159,26 @@
   \seq_item:Nn \l__shape_sides_seq {#1}
 }
 
-\DeclareDocumentCommand \ShuffleSides {}
-{
-  \seq_shuffle:N \l__jigsaw_sides_seq
-}
-
-\DeclareDocumentCommand \ShufflePieces {}
-{
-  \seq_shuffle:N \l__jigsaw_hexagon_sides_seq
-}
-
 \DeclareDocumentCommand \ShowSides {}
 {
-\begin{tabular}{rl}
-  
+  \begin{tabular}{rl}
+  \int_step_inline:nnnn {1}{1}{\seq_count:N \l__jigsaw_sides_seq}
+  {
+    \exp_last_unbraced:Nx \use_i:nn  {
+      \seq_item:Nn \l__jigsaw_sides_seq { ##1 }
+    }
+    &
+    \exp_last_unbraced:Nx \use_ii:nn  {
+      \seq_item:Nn \l__jigsaw_sides_seq { ##1 }
+    }
+    \\
+  }
+  \end{tabular}
+}
+
+\DeclareDocumentCommand \ShowSidesReordered {}
+{
+  \begin{tabular}{rl}
   \int_step_inline:nnnn {1}{1}{\seq_count:N \l__jigsaw_sides_seq}
   {
    \jigsaw_typeset_first_side:n {##1} & \jigsaw_typeset_second_side:n {##1} \\
