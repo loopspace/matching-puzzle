@@ -1,0 +1,84 @@
+\documentclass[landscape]{article}
+\usepackage[landscape,scale=.92]{geometry}
+\usepackage{amsmath}
+\usepackage{fontspec}
+\usepackage{unicode-math}
+
+\thispagestyle{empty}
+\pagestyle{empty}
+
+\setmainfont{TeX Gyre Pagella}
+\setmathfont{TeX Gyre Pagella Math}
+
+
+\usepackage{tikz}
+\usetikzlibrary{matchingpuzzle}
+
+\begin{document}
+
+\begin{Jigsaw}{hexagon}
+\AddSide{\(2^{-1}\)}{\(0.5\)}
+\AddSide{\(5^{-2}\)}{\(0.04\)}
+\AddSide{\(3^5\)}{\(243\)}
+\AddSide{\((-3)^4\)}{\(81\)}
+\AddSide{\(8^2\)}{\(4^3\)}
+\AddSide{\(3^4 \times 3^2\)}{\(3^6\)}
+\AddSide{\(3^4 \div 3^2\)}{\(3^2\)}
+\AddSide{\(\dfrac{7^5}{7^2}\)}{\(7^3\)}
+\AddSide{\(\dfrac{7^5}{7^{-2}}\)}{\(7^7\)}
+\AddSide{\(\dfrac{7^2}{7^5}\)}{\(7^{-3}\)}
+\AddSide{\(x^3 \times x^8\)}{\(x^{11}\)}
+\AddSide{\((x^3)^8\)}{\(x^{24}\)}
+\AddSide{\(x^3 \div x^8\)}{\(x^{-5}\)}
+\AddSide{\((2 p)^2\)}{\(4 p^2\)}
+\AddSide{\((p q)^3\)}{\(p^3 q^3\)}
+\AddSide{\(\dfrac{3}{w^2}\)}{\(3 w^{-2}\)}
+\AddSide{\((3 b)^2 \div 9\)}{\(b^2\)}
+\AddSide{\(3 b^2 \div 9\)}{\(\dfrac{b^2}{3}\)}
+\AddSide{\(a b^2 \times a^2 b\)}{\(a^3 b^3\)}
+\AddSide{\((a b)^2 \times (a b)^2\)}{\(a^4 b^4\)}
+\AddSide{\(5 p^4 \div p^3\)}{\(5 p\)}
+\AddSide{\(\dfrac{t^4 \times (t^3)^2}{t^7}\)}{\(t^3\)}
+\AddSide{\(\dfrac{t^4 \times t^5}{t^7}\)}{\(t^2\)}
+\AddSide{\(\dfrac{t^4 \times t^5}{t^{-7}}\)}{\(t^{16}\)}
+\AddSide{\(b^4 \times b^{-4}\)}{\(1\)}
+\AddSide{\(b^0\)}{\(1\)}
+\AddSide{\(b^2 \div b^2\)}{\(1\)}
+\AddSide{\((a^3)^3\)}{\(a^9\)}
+\AddSide{\(a^9 \div a^3\)}{\(a^6\)}
+\AddSide{\(a^2 \times a^3\)}{\(a^5\)}
+
+\noindent\begin{minipage}{.25\linewidth}
+\ShowSides
+\end{minipage}%
+\begin{minipage}{.25\linewidth}
+\ShowSidesReordered
+\end{minipage}%
+\begin{minipage}{.5\linewidth}
+\vspace*{\fill}
+\hspace*{\fill}
+\begin{tikzpicture}
+\pic[scale=.6] {jigsaw hexagon solution};
+\end{tikzpicture}
+\hspace*{\fill}
+\vspace*{\fill}
+\end{minipage}
+
+\newpage
+
+\vspace*{\fill}
+\hspace*{\fill}
+\begin{tikzpicture}[
+  every node/.style={font=\large},
+  line width=1mm,
+  scale=.9
+  ]
+\pic[transform shape] at ({-5*sqrt(3)},0) {jigsaw hexagon puzzle 1};
+\pic[transform shape] at (0,0) {jigsaw hexagon puzzle 2};
+\pic[transform shape] at ({5*sqrt(3)},0) {jigsaw hexagon puzzle 3};
+\end{tikzpicture}
+\hspace*{\fill}
+\vspace*{\fill}
+
+\end{Jigsaw}
+\end{document}
