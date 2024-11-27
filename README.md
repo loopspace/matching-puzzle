@@ -16,7 +16,7 @@ In your preamble:
 To specify the matching sides, use:
 
 ~~~
-\AddSlide{<first>}{<second>}
+\AddSide{<first>}{<second>}
 ~~~
 
 The hexagon shape uses 30 sides.
@@ -44,7 +44,7 @@ some point, the sides should be shuffled.  Then the pieces should be
 shuffled.
 
 The sides should be shuffled before creating the puzzle.  It is
-probably most useful to shuffle them *after* using `\ShowSlides` but
+probably most useful to shuffle them *after* using `\ShowSides` but
 it should be done *before* showing the solution.
 The pieces should be shuffled *after* showing the solution and
 *before* producing the puzzle.
